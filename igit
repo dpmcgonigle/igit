@@ -1,0 +1,66 @@
+#! /usr/bin/env python
+"""
+igit
+
+    Created: 7/18/2020, by Dan McGonigle
+
+    Purpose: To provide a click-based CLI for regularly saving user/config files with the cron
+
+    Command Groups:
+        stash - Utilize a json file to store files from your machine
+        cron - Perform actions that start, modify, or stop the cron file-saving
+
+    Examples (need to symlink igit to /bin, or /usr/bin):
+        igit stash create macbook
+        igit stash add macbook ~/* --force --dest home
+        igit stash list macbook
+        igit cron edit macbook "0 8 * * *" --save
+        igit cron start macbook
+
+    NOTE: You are going to want to symlink this file like so:
+        $ ln -s /Users/dma0523/code/igit/igit /usr/local/bin
+    You can verify that this worked by then using:
+        $ which igit
+    ...which should return the correct path
+"""
+import click
+from commands import stash, cron
+from utils import debug, info, warning, error
+
+
+@click.group()
+@click.pass_context
+@click.option("--level", default="INFO")
+def cli(context, level):
+    assert level.upper() in [
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR",
+    ], f"LOGGING LEVEL NEEDS TO BE IN ['DEBUG', 'INFO', 'WARNING', 'ERROR']; received {level}"
+    context.ensure_object(dict)
+    context.obj["level"] = level.upper()
+    info(context, f"STARTING IGIT WITH LOGGING LEVEL {level}")
+
+
+@cli.group("stash")
+@click.pass_context
+def stash_command_group(context):
+    """ stash file actions """
+    pass
+
+
+@cli.group("cron")
+@click.pass_context
+def cron_command_group(context):
+    """ cronfile actions """
+    pass
+
+
+if __name__ == "__main__":
+    stash_command_group.add_command(stash.stash_create)
+    stash_command_group.add_command(stash.stash_add)
+    stash_command_group.add_command(stash.stash_list)
+    stash_command_group.add_command(stash.stash_clear)
+    cron_command_group.add_command(cron.cron_edit)
+    cli()
